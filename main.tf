@@ -1,3 +1,20 @@
+resource "aws_s3_bucket_ownership_controls" "dev" {
+  bucket = aws_s3_bucket.dev.id
+
+  rule {
+    object_ownership = "BucketOwnerPreferred"
+  }
+}
+
+resource "aws_s3_bucket_public_access_block" "dev" {
+  bucket = aws_s3_bucket.dev.id
+
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
+}
+
 resource "aws_s3_bucket" "bucket" {
   bucket_prefix = "${var.prefix}-${var.name}"
 
