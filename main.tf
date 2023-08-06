@@ -1,13 +1,13 @@
-resource "aws_s3_bucket_ownership_controls" "dev" {
-  bucket = aws_s3_bucket.dev.id
+resource "aws_s3_bucket_ownership_controls" "bucket" {
+  bucket = aws_s3_bucket.bucket.id
 
   rule {
     object_ownership = "BucketOwnerPreferred"
   }
 }
 
-resource "aws_s3_bucket_public_access_block" "dev" {
-  bucket = aws_s3_bucket.dev.id
+resource "aws_s3_bucket_public_access_block" "bucket" {
+  bucket = aws_s3_bucket.bucket.id
 
   block_public_acls       = false
   block_public_policy     = false
@@ -34,12 +34,21 @@ resource "aws_s3_bucket_website_configuration" "bucket" {
 }
 
 resource "aws_s3_bucket_acl" "bucket" {
+  depends_on = [
+    aws_s3_bucket_ownership_controls.bucket,
+    aws_s3_bucket_public_access_block.bucket,
+  ]
+
   bucket = aws_s3_bucket.bucket.id
 
   acl = "public-read"
 }
 
 resource "aws_s3_bucket_policy" "policy" {
+  depends_on = [
+    aws_s3_bucket_acl.bucket
+  ]
+
   bucket = aws_s3_bucket.bucket.id
   policy = <<EOF
 {
@@ -62,7 +71,6 @@ EOF
 }
 
 resource "aws_s3_object" "webapp" {
-  acl          = "public-read"
   key          = "index.html"
   bucket       = aws_s3_bucket.bucket.id
   content      = file("${path.module}/assets/index.html")
